@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.coder.rental.mapper.AutoInfoMapper">
+
+    <select id="searchByPage" resultType="com.coder.rental.entity.AutoInfo">
+        select i.*, m.name makerName, b.brand_name
+        from auto_info i,
+        auto_maker m,
+        auto_brand b
+        where i.maker_id = m.id
+        and i.brand_id = b.id and i.deleted = 0
+        <if test="autoInfo.autoNum != null and autoInfo.autoNum != ''">
+            and i.auto_num like concat('%', #{autoInfo.autoNum}, '%')
+        </if>
+        <if test="autoInfo.makerId != null ">
+            and i.maker_id = #{autoInfo.makerId}
+        </if>
+        <if test="autoInfo.brandId != null">
+            and i.brand_id = #{autoInfo.brandId}
+        </if>
+        <if test="autoInfo.infoType != null ">
+            and i.info_type = #{autoInfo.infoType}
+        </if>
+        <if test="autoInfo.status != null ">
+            and i.status = #{autoInfo.status}
+        </if>
+        <if test="autoInfo.lowRegistrationDate != null">
+            and i.registration_date >= #{autoInfo.lowRegistrationDate}
+        </if>
+        <if test="autoInfo.highRegistrationDate != null">
+            and i.registration_date &lt;= #{autoInfo.highRegistrationDate}
+        </if>
+        <if test="autoInfo.lowRent != null">
+            and i.rent>= #{autoInfo.lowRent}
+        </if>
+        <if test="autoInfo.highRent != null">
+            and i.rent &lt;= #{autoInfo.highRent}
+        </if>
+
+    </select>
+    <select id="toBeMaintain" resultType="com.coder.rental.entity.AutoInfo">
+        select id, auto_num, maker_id, brand_id, info_type, color, displacement, unit, mileage,
+               rent, registration_date, pic, deposit, status, create_time,
+               update_time, expected_num, actual_num, deleted from auto_info
+        where actual_num &lt;expected_num
+        and deleted=0
+        order by auto_num
+    </select>
+</mapper>

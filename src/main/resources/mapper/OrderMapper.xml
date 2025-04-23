@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.coder.rental.mapper.OrderMapper">
+    <sql id="s">
+        select o.*,
+        c.name customerName,
+        c.tel customerTel,
+        a.auto_num,
+        t.type_name,
+        t.type_discount
+        from busi_order o,
+        busi_customer c,
+        auto_info a,
+        busi_rental_type t
+        where o.customer_id = c.id and o.auto_id = a.id and o.type_id = t.id
+        and o.deleted = 0 and t.deleted=0 and a.deleted=0 and c.deleted=0
+        <if test="order.orderNum != null and order.orderNum != ''">
+            and o.order_num like concat('%',#{order.orderNum},'%')
+        </if>
+        <if test="order.customerName != null and order.customerName != ''">
+            and c.name like concat('%',#{order.customerName},'%')
+        </if>
+        <if test="order.customerTel != null and order.customerTel != ''">
+            and c.tel like concat('%',#{order.customerTel},'%')
+        </if>
+        <if test="order.autoNum != null and order.autoNum != ''">
+            and a.auto_num like concat('%',#{order.autoNum},'%')
+        </if>
+    </sql>
+    <select id="searchUnfinished" resultType="com.coder.rental.entity.Order">
+       <include refid="s"/>
+        and o.return_time is null
+        order by o.rental_time
+    </select>
+    <select id="search" resultType="com.coder.rental.entity.Order">
+        <include refid="s"/>
+        order by o.rental_time desc
+    </select>
+    <select id="countViolation" resultType="java.lang.Long">
+        select count(*) from busi_violation v
+                                 join busi_order o
+                                      on v.auto_id=o.auto_id
+        where v.vtime between o.rental_time and o.return_time
+          and o.deleted=0 and v.deleted=0
+          and v.status=0
+          and o.auto_id=#{auto_id}
+    </select>
+</mapper>
